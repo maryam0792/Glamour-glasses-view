@@ -10,12 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+
+
+
 import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-key-for-dev')
+DEBUG = 'RENDER' not in os.environ
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -47,6 +52,7 @@ INSTALLED_APPS=INSTALLED_APPS+EXTERNAL_APPS
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -127,6 +133,17 @@ STATICFILES_DIR ={
     BASE_DIR, "static",
 }
 
+# Ye line Render par deployment ke liye zaroori hai
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# WhiteNoise storage optimization (optional but recommended)
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -137,17 +154,4 @@ MEDIA_ROOT=os.path.join(BASE_DIR,'media')
 
 # Stripe API Keys
 
-import os # Agar file ke shuru mein import os nahi hai toh ye bhi add karein
 
-STATIC_URL = 'static/'
-
-# Ye line add karein:
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Ensure WhiteNoise is in your MIDDLEWARE (if not already there)
-# It should be right after SecurityMiddleware
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Ye line lazmi honi chahiye
-    # ... other middlewares
-]
